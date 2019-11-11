@@ -1,4 +1,4 @@
-'use strict'
+"use strict";
 
 /*
 |--------------------------------------------------------------------------
@@ -14,11 +14,19 @@
 */
 
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
-const Route = use('Route')
+const Route = use("Route");
 
-Route.get('/', () => {
-  return { greeting: 'Hello world in JSON' }
-})
+Route.get("/", () => {
+  return { greeting: "Hello world in JSON" };
+});
 
-Route.post('/users', 'UserController.create')
-Route.post('/sessions', 'SessionController.create')
+Route.post("/users", "UserController.create");
+Route.post("/sessions", "SessionController.create");
+
+// Ao invés de criar uma rota para cada método o Adonis nos oferece um helper chamado resource
+// cria todas rotas de listar, exibir, criar editar, em um unico comando..
+Route.resource("properties", "PropertyController")
+  // apiOnly garante as rotas Create e Edit que excluimos pq rest nao usa
+  .apiOnly()
+  // o middleware auth garante que user nao autenticados nao acesse as rotas
+  .middleware("auth");

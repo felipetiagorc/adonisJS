@@ -1,4 +1,7 @@
-'use strict'
+"use strict";
+
+// importando o model:
+const Property = use("App/Models/Property");
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -17,8 +20,29 @@ class PropertyController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, view }) {
+
+  //index: Listar todos registros;
+/*
+  async index() {
+    const properties = Property.all();
+
+    return properties;
   }
+
+  */
+
+
+    //index: Listar todos registros, proximos ate 10km:
+
+    async index ({ request }) {
+      const { latitude, longitude } = request.all()
+    
+      const properties = Property.query()
+        .nearBy(latitude, longitude, 10)
+        .fetch()
+    
+      return properties
+    }
 
   /**
    * Render a form to be used for creating a new property.
@@ -30,16 +54,8 @@ class PropertyController {
    * @param {View} ctx.view
    */
 
-  /**
-   * Create/save a new property.
-   * POST properties
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async store ({ request, response }) {
-  }
+  //store: Criar novo registro;
+  async store({ request, response }) {}
 
   /**
    * Display a single property.
@@ -50,7 +66,14 @@ class PropertyController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
+
+  //show: Exibir um registro;
+  async show({ params }) {
+    const property = await Property.findOrFail(params.id);
+
+    await property.load("images");
+
+    return property;
   }
 
   /**
@@ -63,16 +86,8 @@ class PropertyController {
    * @param {View} ctx.view
    */
 
-  /**
-   * Update property details.
-   * PUT or PATCH properties/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async update ({ params, request, response }) {
-  }
+  // update: Alterar um registro;
+  async update({ params, request, response }) {}
 
   /**
    * Delete a property with id.
@@ -82,8 +97,16 @@ class PropertyController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
-  }
-}
 
-module.exports = PropertyController
+  //destroy: Remover um registro;
+  async destroy ({ params, auth, response }) {
+    const property = await Property.findOrFail(params.id)
+  
+    if (property.user_id !== auth.user.id) {
+      return response.status(401).send({ error: 'Not authorized' })
+    }
+  
+    await property.delete()
+  
+
+module.exports = PropertyController;
