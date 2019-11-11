@@ -29,8 +29,6 @@ class PropertyController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async create ({ request, response, view }) {
-  }
 
   /**
    * Create/save a new property.
@@ -64,8 +62,6 @@ class PropertyController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async edit ({ params, request, response, view }) {
-  }
 
   /**
    * Update property details.
