@@ -31,15 +31,18 @@ class PropertyController {
 
   */
 
-
+// Aqui buscamos os dados lat long do corpo da requisição (enviado pelo front-end)
+// E utilizamos o nearBy que criamos como scopeNearBy 
     //index: Listar todos registros, proximos ate 10km:
 
     async index ({ request }) {
       const { latitude, longitude } = request.all()
     
       const properties = Property.query()
-        .nearBy(latitude, longitude, 10)
-        .fetch()
+      // .with realiza Eager Loading nas imagens adicionando-as ao retorno de cada imóvel
+      .with('images')
+      .nearBy(latitude, longitude, 10)
+      .fetch()
     
       return properties
     }
@@ -55,7 +58,22 @@ class PropertyController {
    */
 
   //store: Criar novo registro;
-  async store({ request, response }) {}
+  async store ({ auth, request, response }) {
+    const { id } = auth.user
+    const data = request.only([
+      'title',
+      'address',
+      'latitude',
+      'longitude',
+      'price'
+    ])
+  
+    const property = await Property.create({ ...data, user_id: id })
+  
+    return property
+  }
+
+  
 
   /**
    * Display a single property.
@@ -87,7 +105,26 @@ class PropertyController {
    */
 
   // update: Alterar um registro;
-  async update({ params, request, response }) {}
+  async update({ params, request, response }) {
+    // findOrFail, pra buscar o ID que vem da URL e atualizar no banco ou.. FAIL
+    const property = await Property.findOrFail(params.id)
+
+    // buscamos novamente dados da requisicao 
+    const data = request.only([
+
+        'title',
+        'address',
+        'latitude',
+        'longitude',
+        'price'
+      ])
+
+      // e damos merge - fundimos os dados de 'property' (do banco) com o da requisição 'PUT'
+      property.merge(data)
+      await property.save()
+
+      return property
+  }
 
   /**
    * Delete a property with id.
@@ -107,6 +144,8 @@ class PropertyController {
     }
   
     await property.delete()
-  
+  }
+    
+}
 
 module.exports = PropertyController;
